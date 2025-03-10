@@ -1,4 +1,123 @@
-                    GNU GENERAL PUBLIC LICENSE
+ import requests
+import json
+
+class IslamicChatBot:
+    def __init__(self, api_key):
+        self.api_key = api_key
+        self.base_url = "https://api.deepseek.com/v1"
+        self.headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
+        self.language = "ur"  # Default language is Urdu
+        self.school_of_thought = "deobandi"  # Default school of thought is Deobandi
+
+    def set_language(self, language):
+        self.language = language
+
+    def set_school_of_thought(self, school_of_thought):
+        self.school_of_thought = school_of_thought
+
+    def detect_language(self, text):
+        # Simple language detection based on common words
+        if any(word in text for word in ["کیا", "ہے", "ہیں"]):
+            return "ur"
+        elif any(word in text for word in ["what", "is", "are"]):
+            return "en"
+        elif any(word in text for word in ["ما", "هل", "هو"]):
+            return "ar"
+        elif any(word in text for word in ["چیست", "است", "هست"]):
+            return "fa"
+        elif any(word in text for word in ["क्या", "है", "हो"]):
+            return "hi"
+        else:
+            return "en"  # Default to English if no language is detected
+
+    def get_response(self, question):
+        detected_language = self.detect_language(question)
+        self.set_language(detected_language)
+
+        payload = {
+            "question": question,
+            "language": self.language,
+            "school_of_thought": self.school_of_thought
+        }
+
+        response = requests.post(f"{self.base_url}/ask", headers=self.headers, data=json.dumps(payload))
+        if response.status_code == 200:
+            return response.json().get("answer", "Sorry, I couldn't find an answer.")
+        else:
+            return "Sorry, there was an error processing your request."
+
+    def get_quranic_verse(self, surah, verse):
+        payload = {
+            "surah": surah,
+            "verse": verse,
+            "language": self.language
+        }
+
+        response = requests.post(f"{self.base_url}/quran", headers=self.headers, data=json.dumps(payload))
+        if response.status_code == 200:
+            return response.json().get("verse", "Sorry, I couldn't find the verse.")
+        else:
+            return "Sorry, there was an error fetching the Quranic verse."
+
+    def get_hadith(self, book, number):
+        payload = {
+            "book": book,
+            "number": number,
+            "language": self.language
+        }
+
+        response = requests.post(f"{self.base_url}/hadith", headers=self.headers, data=json.dumps(payload))
+        if response.status_code == 200:
+            return response.json().get("hadith", "Sorry, I couldn't find the hadith.")
+        else:
+            return "Sorry, there was an error fetching the hadith."
+
+    def get_fatwa(self, question):
+        payload = {
+            "question": question,
+            "language": self.language,
+            "school_of_thought": self.school_of_thought
+        }
+
+        response = requests.post(f"{self.base_url}/fatwa", headers=self.headers, data=json.dumps(payload))
+        if response.status_code == 200:
+            return response.json().get("fatwa", "Sorry, I couldn't find a fatwa.")
+        else:
+            return "Sorry, there was an error fetching the fatwa."
+
+# Example usage
+if __name__ == "__main__":
+    api_key = "your_deepseek_api_key_here"  # Replace with your actual DeepSeek API key
+    chatbot = IslamicChatBot(api_key)
+
+    # Set language and school of thought
+    chatbot.set_language("ur")
+    chatbot.set_school_of_thought("deobandi")
+
+    # Ask a question
+    question = "نماز کی اہمیت کیا ہے؟"
+    response = chatbot.get_response(question)
+    print(response)
+
+    # Get a Quranic verse
+    surah = 2
+    verse = 255
+    quranic_verse = chatbot.get_quranic_verse(surah, verse)
+    print(quranic_verse)
+
+    # Get a hadith
+    book = "bukhari"
+    number = 1
+    hadith = chatbot.get_hadith(book, number)
+    print(hadith)
+
+    # Get a fatwa
+    fatwa_question = "کیا موسیقی حرام ہے؟"
+    fatwa = chatbot.get_fatwa(fatwa_question)
+    print(fatwa)                   GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 
  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
